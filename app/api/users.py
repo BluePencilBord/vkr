@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 import bcrypt
@@ -6,6 +7,7 @@ import bcrypt
 from app.db.database import get_async_session
 from app.db.models import User
 from app.schemas.users import CreateUser, CreateUserResponse
+from app.schemas.token import TokenResponse
 
 router = APIRouter()
 
@@ -46,3 +48,24 @@ async def register_user(user_data: CreateUser, session: AsyncSession = Depends(g
     await session.refresh(new_user)
 
     return new_user
+
+
+@router.post("/login")
+async def login_user(user_data: CreateUser, session: AsyncSession = Depends(get_async_session)):
+    query = select(User).where(User.email == user_data.email)
+    result = await session.execute(query)
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(status_code=400, detail="Неверный email или пароль")
+    
+    is_password_correct = await run_in_threadpool(
+        verify_password,
+        user_data.password,
+        user.encrypted_password
+    )
+
+    if not is_password_correct:
+        raise HTTPException(status_code=400, detail="Неверный email или пароль")
+    
+    return TokenResponse(access_token=f"fake-jwt-token-for-{user.id}")
