@@ -4,10 +4,12 @@ from sqlalchemy import select
 import uuid
 
 from app.db.database import get_async_session
-from app.db.models import Project
+from app.db.models import Project, User
 from app.schemas.projects import ProjectResponse
 
 from services.s3 import upload_file_to_s3, get_presigned_url
+
+from api.dependencies import get_current_user
 
 
 router = APIRouter()
@@ -19,10 +21,10 @@ async def upload_to_s3(file: UploadFile, project_id: uuid.UUID) -> str:
 
 @router.post("/upload_gdd", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
 async def upload_gdd(
-    user_id: uuid.UUID,
-    title: str,
-    file: UploadFile,
-    session: AsyncSession = Depends(get_async_session)
+    title: str = Form(...),
+    file: UploadFile = File(...),
+    session: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(get_current_user)
 ):
     allowed_extensions = ["pdf", "docx"]
     file_ext = file.filename.split(".")[-1].lower()
@@ -34,7 +36,7 @@ async def upload_gdd(
         )
     
     new_project = Project(
-        user_id = user_id,
+        user_id = current_user.id,
         title = title
     )
 
@@ -62,12 +64,12 @@ async def upload_gdd(
     return new_project
 
 
-@router.get("/projects")
+@router.get("/projects", response_model=list[ProjectResponse])
 async def get_user_projects(
-    user_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_async_session)
 ):
-    query = select(Project).where(Project.user_id == user_id)
+    query = select(Project).where(Project.user_id == current_user.id)
     result = await session.execute(query)
     projects = result.scalars().all()
 

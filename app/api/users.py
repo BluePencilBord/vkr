@@ -9,6 +9,8 @@ from app.db.models import User
 from app.schemas.users import CreateUser, CreateUserResponse
 from app.schemas.token import TokenResponse
 
+from security import create_access_token
+
 router = APIRouter()
 
 
@@ -24,7 +26,7 @@ def verify_password(plain_password: str, hashed_password: str):
     return bcrypt.checkpw(password_bytes, hash_bytes)
 
 
-@router.post("/register")
+@router.post("/register", response_model=CreateUserResponse)
 async def register_user(user_data: CreateUser, session: AsyncSession = Depends(get_async_session)):
     query = select(User).where(User.email == user_data.email)
     result = await session.execute(query)
@@ -50,7 +52,7 @@ async def register_user(user_data: CreateUser, session: AsyncSession = Depends(g
     return new_user
 
 
-@router.post("/login")
+@router.post("/login", response_model=TokenResponse)
 async def login_user(user_data: CreateUser, session: AsyncSession = Depends(get_async_session)):
     query = select(User).where(User.email == user_data.email)
     result = await session.execute(query)
@@ -68,4 +70,5 @@ async def login_user(user_data: CreateUser, session: AsyncSession = Depends(get_
     if not is_password_correct:
         raise HTTPException(status_code=400, detail="Неверный email или пароль")
     
-    return TokenResponse(access_token=f"fake-jwt-token-for-{user.id}")
+    access_token = create_access_token(data = {"sub": str(user.id)})
+    return TokenResponse(access_token=access_token, token_type="bearer")
