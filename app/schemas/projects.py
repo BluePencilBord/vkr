@@ -9,6 +9,7 @@ class ProjectResponse(BaseModel):
     title: str
     gdd_file_key: Optional[str]
     gdd_url: Optional[str] = None
+    report_data: Optional[dict] = None
     created_at: datetime
 
     model_config = ConfigDict(from_attributes = True)

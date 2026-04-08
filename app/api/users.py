@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.concurrency import run_in_threadpool
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 import bcrypt
@@ -9,7 +10,7 @@ from app.db.models import User
 from app.schemas.users import CreateUser, CreateUserResponse
 from app.schemas.token import TokenResponse
 
-from security import create_access_token
+from app.security import create_access_token
 
 router = APIRouter()
 
@@ -53,8 +54,11 @@ async def register_user(user_data: CreateUser, session: AsyncSession = Depends(g
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login_user(user_data: CreateUser, session: AsyncSession = Depends(get_async_session)):
-    query = select(User).where(User.email == user_data.email)
+async def login_user(
+    user_data: OAuth2PasswordRequestForm = Depends(),
+    session: AsyncSession = Depends(get_async_session)
+):
+    query = select(User).where(User.email == user_data.username)
     result = await session.execute(query)
     user = result.scalar_one_or_none()
 

@@ -6,10 +6,9 @@ import uuid
 from app.db.database import get_async_session
 from app.db.models import Project, User
 from app.schemas.projects import ProjectResponse
-
-from services.s3 import upload_file_to_s3, get_presigned_url
-
-from api.dependencies import get_current_user
+from app.services.s3 import upload_file_to_s3, get_presigned_url
+from app.api.dependencies import get_current_user
+from app.worker import broker
 
 
 router = APIRouter()
@@ -84,3 +83,24 @@ async def get_user_projects(
         projects_response.append(proj_data)
 
     return projects_response
+
+
+@router.post("/{project_id}/analyze", status_code=status.HTTP_202_ACCEPTED)
+async def start_analysis(
+    project_id: uuid.UUID,
+    session: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(get_current_user)
+):
+    query = select(Project).where(Project.id == project_id, Project.user_id == current_user.id)
+    response = await session.execute(query)
+    project = response.scalar_one_or_none()
+
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Проект не найден"
+        )
+
+    await broker.publish(str(project.id), queue="gdd_analysis_queue")
+
+    return {"message": "Анализ документа запущен"}

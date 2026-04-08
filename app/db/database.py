@@ -1,4 +1,5 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from sqlalchemy.pool import AsyncAdaptedQueuePool
 from app.config import settings
 
 

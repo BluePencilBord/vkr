@@ -28,6 +28,7 @@ class Project(Base):
     gdd_file_key: Mapped[str | None] = mapped_column(Text, nullable=True) 
     thought_process: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     report_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    report_data: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     user: Mapped["User"] = relationship("User", back_populates="projects")

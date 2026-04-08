@@ -6,12 +6,12 @@ import uuid
 from sqlalchemy.ext.asyncio import AsyncSession 
 from sqlalchemy import select
 
-from config import settings
+from app.config import settings
 from app.db.database import get_async_session
-from db.models import User
+from app.db.models import User
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/users/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 
 async def get_current_user(
