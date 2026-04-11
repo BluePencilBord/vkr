@@ -1,5 +1,4 @@
-from pydantic_ai import Agent
-from pydantic_ai.capabilities import WebSearch
+from pydantic_ai import Agent, RunContext
 from pydantic_ai.models.google import GoogleModel
 import httpx
 from typing import List, Dict, Any
@@ -36,8 +35,7 @@ economy_agent = Agent(
 
 market_agent = Agent(
     flash_model, 
-    system_prompt=MARKET_ANALYST_PROMPT,
-    capabilities=[WebSearch(max_uses=2)]
+    system_prompt=MARKET_ANALYST_PROMPT
 )
 
 @market_agent.tool
