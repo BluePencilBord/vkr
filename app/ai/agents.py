@@ -5,7 +5,7 @@ from typing import List, Dict, Any
 
 from app.ai.prompts import ROUTER_PROMPT, LEAD_GAME_DESIGNER_PROMPT, NARRATIVE_DESIGNER_PROMPT, CORE_MECHANICS_DESIGNER_PROMPT, ECONOMY_AND_MONETIZATION_DESIGNER_PROMPT, MARKET_ANALYST_PROMPT, TECHNICAL_PRODUCER_PROMPT
 from app.ai.config import flash_model, pro_model
-from app.schemas.agents import RouterOutput
+from app.schemas.agents import RouterOutput, LeadDesignerOutput
 
 
 router_agent = Agent(
@@ -53,12 +53,19 @@ async def fetch_steam_market_data(ctx: RunContext[None], genre: str, tags: List[
         
         market_sample = []
         for game in games:
+            raw_price = game.get("price", 0)
+            
+            try:
+                parsed_price = float(raw_price) / 100
+            except (ValueError, TypeError):
+                parsed_price = 0.0
+            
             market_sample.append({
                 "name": game.get("name"),
                 "ccu": game.get("ccu"),
                 "positive_reviews": game.get("positive"),
                 "negative_reviews": game.get("negative"),
-                "price": game.get("price", 0) / 100 
+                "price": parsed_price
             })
             
         return {
@@ -75,5 +82,7 @@ tech_agent = Agent(
 
 lead_agent = Agent(
     pro_model, 
-    system_prompt=LEAD_GAME_DESIGNER_PROMPT
+    system_prompt=LEAD_GAME_DESIGNER_PROMPT,
+    output_type=LeadDesignerOutput,
+    output_retries=2
 )

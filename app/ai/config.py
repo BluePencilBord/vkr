@@ -1,5 +1,8 @@
 from app.config import settings
 from pydantic_ai.models.google import GoogleModel
+from pydantic_ai.providers.google import GoogleProvider
 
-flash_model = GoogleModel("gemini-2.5-flash", api_key=settings.gemini_api_key)
-pro_model = GoogleModel("gemini-2.5-pro", api_key=settings.gemini_api_key)
+google_provider = GoogleProvider(api_key=settings.gemini_api_key)
+
+flash_model = GoogleModel(model_name="gemini-2.5-flash-lite", provider=google_provider)
+pro_model = GoogleModel(model_name="gemini-2.5-flash-lite", provider=google_provider)

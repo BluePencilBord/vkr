@@ -1,4 +1,4 @@
-from faststream import FastStream
+from faststream import FastStream, Logger
 from faststream.rabbit import RabbitBroker
 import uuid
 from sqlalchemy import select
@@ -16,7 +16,10 @@ app = FastStream(broker)
 
 
 @broker.subscriber("gdd_analysis_queue")
-async def handle_gdd_analysis(project_id_str: str):
+async def handle_gdd_analysis(
+    project_id_str: str,
+    logger: Logger
+):
     project_id = uuid.UUID(project_id_str)
 
     async with async_session_maker() as session:
@@ -31,10 +34,13 @@ async def handle_gdd_analysis(project_id_str: str):
             file_bytes = await download_file_from_s3(project.gdd_file_key)
             text = await extract_text_from_pdf(file_bytes)
 
-            project.report_data = await analyze_gdd(text)
+            analyze_gdd_result = await analyze_gdd(text, logger)
+            logger.info(str(analyze_gdd_result))
+            project.report_data = analyze_gdd_result
             await session.commit()
 
         except Exception as e:
-            Project.report_data = {"error": str(e)}
+            project.report_data = {"error": str(e)}
+            logger.exception(f"error in worker.py! \n")
             await session.commit()
 

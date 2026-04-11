@@ -1,19 +1,27 @@
+from pydantic_ai import Agent
+from app.schemas.agents import LeadDesignerOutput
+import asyncio
 import json
+
 from app.ai.agents import (router_agent, narrative_agent, mechanics_agent,
                            economy_agent, market_agent, tech_agent, lead_agent)
 
 
 async def run_specialist(agent: Agent, chunk: str, role_name: str) -> tuple[str, str]:
     result = await agent.run(chunk)
-    return role_name, result.data
+    return role_name, result.output
 
 
-async def analyze_gdd(text: str) -> dict:
-    router_result = await router_agent.run(gdd_text)
-    routing_data = router_result.data
+async def analyze_gdd(text: str, logger) -> dict:
+    router_result = await router_agent.run(text)
+    routing_data = router_result.output
 
-    if not routing_data.is_valid_gdd or not routing_data.chunks:
-        return f"Ошибка валидации GDD: {routing_data.error_message}"
+    if not routing_data.is_valid_gdd:
+        err_msg = routing_data.error_message or "gdd rejected. no comments from router agent."
+        return {"error": f"GDD validation error: {err_msg}"}
+
+    if not routing_data.chunks:
+        return {"error": f"GDD validation error: no chunks \n {str(routing_data)}"}
 
     tasks = []
     chunks = routing_data.chunks
@@ -32,6 +40,7 @@ async def analyze_gdd(text: str) -> dict:
     specialist_results = await asyncio.gather(*tasks)
 
     compiled_reports = "\n\n".join([f"--- ОТЧЕТ {role.upper()} ---\n{report}" for role, report in specialist_results])
+    logger.info(compiled_reports)
 
     lead_result = await lead_agent.run(compiled_reports)
-    return lead_result.data
+    return lead_result.output.model_dump(mode="json")
