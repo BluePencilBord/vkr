@@ -1,40 +1,39 @@
 from pydantic_ai import Agent, RunContext
-from pydantic_ai.models.google import GoogleModel
 import httpx
 from typing import List, Dict, Any
 
 from app.ai.prompts import ROUTER_PROMPT, LEAD_GAME_DESIGNER_PROMPT, NARRATIVE_DESIGNER_PROMPT, CORE_MECHANICS_DESIGNER_PROMPT, ECONOMY_AND_MONETIZATION_DESIGNER_PROMPT, MARKET_ANALYST_PROMPT, TECHNICAL_PRODUCER_PROMPT
-from app.ai.config import flash_model, pro_model
+from app.ai.config import model
 from app.schemas.agents import RouterOutput, LeadDesignerOutput
 
 
 router_agent = Agent(
-    flash_model, 
+    model, 
     output_type=RouterOutput, 
     system_prompt=ROUTER_PROMPT
 )
 
 
 narrative_agent = Agent(
-    flash_model, 
+    model, 
     system_prompt=NARRATIVE_DESIGNER_PROMPT
 )
 
 
 mechanics_agent = Agent(
-    flash_model, 
+    model, 
     system_prompt=CORE_MECHANICS_DESIGNER_PROMPT,
 )
 
 
 economy_agent = Agent(
-    flash_model, 
+    model, 
     system_prompt=ECONOMY_AND_MONETIZATION_DESIGNER_PROMPT
 )
 
 
 market_agent = Agent(
-    flash_model, 
+    model, 
     system_prompt=MARKET_ANALYST_PROMPT
 )
 
@@ -75,13 +74,13 @@ async def fetch_steam_market_data(ctx: RunContext[None], genre: str, tags: List[
 
 
 tech_agent = Agent(
-    flash_model, 
+    model, 
     system_prompt=TECHNICAL_PRODUCER_PROMPT
 )
 
 
 lead_agent = Agent(
-    pro_model, 
+    model, 
     system_prompt=LEAD_GAME_DESIGNER_PROMPT,
     output_type=LeadDesignerOutput,
     output_retries=2

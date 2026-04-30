@@ -1,8 +1,7 @@
 from app.config import settings
-from pydantic_ai.models.google import GoogleModel
-from pydantic_ai.providers.google import GoogleProvider
+from pydantic_ai.models.openrouter import OpenRouterModel
 
-google_provider = GoogleProvider(api_key=settings.gemini_api_key)
-
-flash_model = GoogleModel(model_name="gemini-2.5-flash-lite", provider=google_provider)
-pro_model = GoogleModel(model_name="gemini-2.5-flash-lite", provider=google_provider)
+model = OpenRouterModel(
+    model_name="google/gemma-4-31b-it:free",
+    api_key=settings.ai_api_key,
+)
