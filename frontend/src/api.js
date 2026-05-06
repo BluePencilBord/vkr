@@ -55,6 +55,18 @@ export async function getProjects() {
   return response.json()
 }
 
+export async function getProject(projectId) {
+  const response = await fetch(`${API_URL}/projects/${projectId}`, {
+    headers: getAuthHeaders()
+  })
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch project details')
+  }
+  
+  return response.json()
+}
+
 export async function uploadProject(title, file) {
   const formData = new FormData()
   formData.append('title', title)
@@ -75,7 +87,7 @@ export async function uploadProject(title, file) {
 }
 
 export async function analyzeProject(projectId) {
-  const response = await fetch(`${API_URL}/${projectId}/analyze`, {
+  const response = await fetch(`${API_URL}/projects/${projectId}/analyze`, {
     method: 'POST',
     headers: getAuthHeaders()
   })
@@ -86,4 +98,18 @@ export async function analyzeProject(projectId) {
   }
   
   return response.json()
+}
+
+export async function deleteProject(projectId) {
+  const response = await fetch(`${API_URL}/projects/${projectId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders()
+  })
+  
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.detail || 'Failed to delete project')
+  }
+  
+  return true
 }

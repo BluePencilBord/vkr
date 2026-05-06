@@ -6,7 +6,7 @@ import uuid
 from app.db.database import get_async_session
 from app.db.models import Project, User
 from app.schemas.projects import ProjectResponse
-from app.services.s3 import upload_file_to_s3, get_presigned_url
+from app.services.s3 import upload_file_to_s3, get_presigned_url, delete_file_from_s3
 from app.api.dependencies import get_current_user
 from app.worker import broker
 
@@ -85,7 +85,30 @@ async def get_user_projects(
     return projects_response
 
 
-@router.post("/{project_id}/analyze", status_code=status.HTTP_202_ACCEPTED)
+@router.get("/projects/{project_id}", response_model=ProjectResponse)
+async def get_project(
+    project_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_async_session)
+):
+    query = select(Project).where(Project.id == project_id, Project.user_id == current_user.id)
+    result = await session.execute(query)
+    project = result.scalar_one_or_none()
+
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Проект не найден"
+        )
+    
+    proj_data = ProjectResponse.model_validate(project)
+    if project.gdd_file_key:
+        proj_data.gdd_url = await get_presigned_url(project.gdd_file_key)
+
+    return proj_data
+
+
+@router.post("/projects/{project_id}/analyze", status_code=status.HTTP_202_ACCEPTED)
 async def start_analysis(
     project_id: uuid.UUID,
     session: AsyncSession = Depends(get_async_session),
@@ -104,3 +127,29 @@ async def start_analysis(
     await broker.publish(str(project.id), queue="gdd_analysis_queue")
 
     return {"message": "Анализ документа запущен"}
+
+@router.delete("/projects/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_project(
+    project_id: uuid.UUID,
+    session: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(get_current_user)
+):
+    query = select(Project).where(Project.id == project_id, Project.user_id == current_user.id)
+    result = await session.execute(query)
+    project = result.scalar_one_or_none()
+
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Проект не найден"
+        )
+
+    if project.gdd_file_key:
+        try:
+            await delete_file_from_s3(project.gdd_file_key)
+        except Exception as e:
+            print(f"Failed to delete file from S3: {e}")
+
+    await session.delete(project)
+    await session.commit()
+

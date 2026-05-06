@@ -62,4 +62,20 @@ async def download_file_from_s3(file_key: str) -> bytes:
 
         file_bytes = await response["Body"].read()
         return file_bytes
+
+async def delete_file_from_s3(file_key: str):
+    session = aioboto3.Session()
+
+    async with session.client(
+        service_name = "s3",
+        endpoint_url = settings.s3_endpoint_url,
+        aws_access_key_id = settings.s3_access_key,
+        aws_secret_access_key = settings.s3_secret_key,
+        region_name = 'ru-central1'
+    ) as s3_client:
+        await s3_client.delete_object(
+            Bucket=settings.s3_bucket_name,
+            Key=file_key
+        )
+
     
