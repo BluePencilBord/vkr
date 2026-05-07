@@ -37,7 +37,6 @@ economy_agent = Agent(
     tools=[calculate_formula]
 )
 
-# Added built-in duckduckgo web search tool with max_results limit.
 market_agent = Agent(
     model, 
     system_prompt=MARKET_ANALYST_PROMPT,

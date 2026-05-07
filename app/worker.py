@@ -41,10 +41,6 @@ async def handle_gdd_analysis(
             await session.commit()
 
         except Exception as e:
-            if "429" in str(e) and attempt < max_retries - 1:
-                logger.warning(f"Поймали 429 лимит")
-                await asyncio.sleep(15)
-            else:
                 project.report_data = {"error": str(e)}
                 logger.exception(f"error in worker.py! \n")
                 await session.commit()
