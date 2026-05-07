@@ -6,6 +6,6 @@ from pydantic_ai.providers.openrouter import OpenRouterProvider
 openrouter_provider = OpenRouterProvider(api_key=settings.ai_api_key)
 
 model = OpenRouterModel(
-    model_name="google/gemma-4-31b-it:free",
-    provider=openrouter_provider
+    model_name="google/gemma-4-26b-a4b-it",
+    provider=openrouter_provider,
 )

@@ -15,6 +15,6 @@ class RouterOutput(BaseModel):
     error_message: Optional[str]
     chunks: GDDChunks
 
+
 class LeadDesignerOutput(BaseModel):
-    summary_text: Optional[str]
-    
+    summary_text: str

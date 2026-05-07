@@ -1,11 +1,11 @@
-import aioboto3
+import aiobotocore.session
 from app.config import settings
 
 
 async def upload_file_to_s3(file_bytes: bytes, file_name: str, content_type: str):
-    session = aioboto3.Session()
+    session = aiobotocore.session.get_session()
 
-    async with session.client(
+    async with session.create_client(
         service_name = "s3",
         endpoint_url = settings.s3_endpoint_url,
         aws_access_key_id = settings.s3_access_key,
@@ -22,9 +22,9 @@ async def upload_file_to_s3(file_bytes: bytes, file_name: str, content_type: str
 
     
 async def get_presigned_url(file_name: str, expiration: int = 900) -> str:
-    session = aioboto3.Session()
+    session = aiobotocore.session.get_session()
 
-    async with session.client(
+    async with session.create_client(
         service_name = "s3",
         endpoint_url = settings.s3_endpoint_url,
         aws_access_key_id = settings.s3_access_key,
@@ -45,9 +45,9 @@ async def get_presigned_url(file_name: str, expiration: int = 900) -> str:
     
 
 async def download_file_from_s3(file_key: str) -> bytes:
-    session = aioboto3.Session()
+    session = aiobotocore.session.get_session()
 
-    async with session.client(
+    async with session.create_client(
         service_name = "s3",
         endpoint_url = settings.s3_endpoint_url,
         aws_access_key_id = settings.s3_access_key,
@@ -64,9 +64,9 @@ async def download_file_from_s3(file_key: str) -> bytes:
         return file_bytes
 
 async def delete_file_from_s3(file_key: str):
-    session = aioboto3.Session()
+    session = aiobotocore.session.get_session()
 
-    async with session.client(
+    async with session.create_client(
         service_name = "s3",
         endpoint_url = settings.s3_endpoint_url,
         aws_access_key_id = settings.s3_access_key,
@@ -77,5 +77,3 @@ async def delete_file_from_s3(file_key: str):
             Bucket=settings.s3_bucket_name,
             Key=file_key
         )
-
-    

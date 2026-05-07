@@ -6,10 +6,11 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "ag2[gemini]>=0.11.5",
-    "aioboto3>=15.5.0",
+    "aiobotocore>=3.6.0",
     "alembic>=1.18.4",
     "asyncpg>=0.31.0",
     "bcrypt>=5.0.0",
+    "duckduckgo-search>=8.1.1",
     "fastapi>=0.135.1",
     "faststream[cli,rabbit]>=0.6.7",
     "google-genai>=1.70.0",

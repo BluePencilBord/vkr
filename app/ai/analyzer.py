@@ -1,4 +1,5 @@
 from pydantic_ai import Agent
+from pydantic_ai import ModelSettings
 from app.schemas.agents import LeadDesignerOutput
 import asyncio
 import json
@@ -26,21 +27,21 @@ async def analyze_gdd(text: str, logger) -> dict:
     tasks = []
     chunks = routing_data.chunks
 
-    if chunks.narrative_chunk:
+    if chunks.narrative_chunk and chunks.narrative_chunk != 'null':
         tasks.append(run_specialist(narrative_agent, chunks.narrative_chunk, "Narrative"))
-    if chunks.core_mechanics_chunk:
+    if chunks.core_mechanics_chunk and chunks.core_mechanics_chunk != 'null':
         tasks.append(run_specialist(mechanics_agent, chunks.core_mechanics_chunk, "Mechanics"))
-    if chunks.economy_monetization_chunk:
+    if chunks.economy_monetization_chunk and chunks.economy_monetization_chunk != 'null':
         tasks.append(run_specialist(economy_agent, chunks.economy_monetization_chunk, "Economy"))
-    if chunks.market_analyst_chunk:
+    if chunks.market_analyst_chunk and chunks.market_analyst_chunk != 'null':
         tasks.append(run_specialist(market_agent, chunks.market_analyst_chunk, "Market"))
-    if chunks.technical_producer_chunk:
+    if chunks.technical_producer_chunk and chunks.technical_producer_chunk != 'null':
         tasks.append(run_specialist(tech_agent, chunks.technical_producer_chunk, "Tech"))
 
     specialist_results = await asyncio.gather(*tasks)
 
     compiled_reports = "\n\n".join([f"--- ОТЧЕТ {role.upper()} ---\n{report}" for role, report in specialist_results])
-    logger.info(compiled_reports)
+    logger.info(f"Compiled reports generated successfully: \n{compiled_reports}")
 
-    lead_result = await lead_agent.run(compiled_reports)
-    return lead_result.output.model_dump(mode="json")
+    lead_result = await lead_agent.run(compiled_reports, model_settings=ModelSettings(max_tokens=100000))
+    return {"summary_text": lead_result.output.summary_text}

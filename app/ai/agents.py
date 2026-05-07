@@ -1,5 +1,15 @@
 from pydantic_ai import Agent
-from app.ai.prompts import ROUTER_PROMPT, LEAD_GAME_DESIGNER_PROMPT, NARRATIVE_DESIGNER_PROMPT, CORE_MECHANICS_DESIGNER_PROMPT, ECONOMY_AND_MONETIZATION_DESIGNER_PROMPT, MARKET_ANALYST_PROMPT, TECHNICAL_PRODUCER_PROMPT
+from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
+
+from app.ai.prompts import (
+    ROUTER_PROMPT, 
+    NARRATIVE_DESIGNER_PROMPT, 
+    CORE_MECHANICS_DESIGNER_PROMPT, 
+    ECONOMY_AND_MONETIZATION_DESIGNER_PROMPT, 
+    MARKET_ANALYST_PROMPT, 
+    TECHNICAL_PRODUCER_PROMPT,
+    LEAD_GAME_DESIGNER_PROMPT
+)
 from app.ai.config import model
 from app.schemas.agents import RouterOutput, LeadDesignerOutput
 from app.ai.agent_tools import fetch_steam_market_data, calculate_formula
@@ -27,10 +37,11 @@ economy_agent = Agent(
     tools=[calculate_formula]
 )
 
+# Added built-in duckduckgo web search tool with max_results limit.
 market_agent = Agent(
     model, 
     system_prompt=MARKET_ANALYST_PROMPT,
-    tools=[fetch_steam_market_data]
+    tools=[fetch_steam_market_data, duckduckgo_search_tool(max_results=3)]
 )
 
 tech_agent = Agent(
@@ -39,8 +50,8 @@ tech_agent = Agent(
 )
 
 lead_agent = Agent(
-    model, 
+    model,
     system_prompt=LEAD_GAME_DESIGNER_PROMPT,
     output_type=LeadDesignerOutput,
-    output_retries=2
+    retries=2
 )
