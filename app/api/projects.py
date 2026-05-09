@@ -124,6 +124,9 @@ async def start_analysis(
             detail="Проект не найден"
         )
 
+    project.report_data = None
+    await session.commit()
+
     await broker.publish(str(project.id), queue="gdd_analysis_queue")
 
     return {"message": "Анализ документа запущен"}

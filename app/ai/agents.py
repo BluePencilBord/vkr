@@ -11,7 +11,7 @@ from app.ai.prompts import (
     LEAD_GAME_DESIGNER_PROMPT
 )
 from app.ai.config import model
-from app.schemas.agents import RouterOutput, LeadDesignerOutput
+from app.schemas.agents import RouterOutput
 from app.ai.agent_tools import fetch_steam_market_data, calculate_formula
 
 router_agent = Agent(
@@ -51,6 +51,5 @@ tech_agent = Agent(
 lead_agent = Agent(
     model,
     system_prompt=LEAD_GAME_DESIGNER_PROMPT,
-    output_type=LeadDesignerOutput,
-    retries=2
+    # retries=2
 )

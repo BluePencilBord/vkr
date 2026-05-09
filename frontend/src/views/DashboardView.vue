@@ -90,6 +90,13 @@ const startPolling = (projectId) => {
 const handleAnalyze = async (projectId) => {
   try {
     analyzingStatus.value[projectId] = true
+    if (activeProject.value?.id === projectId) {
+      activeProject.value.report_data = null
+    }
+    const index = projects.value.findIndex(p => p.id === projectId)
+    if (index !== -1) {
+      projects.value[index].report_data = null
+    }
     await analyzeProject(projectId)
     startPolling(projectId)
   } catch (error) {
@@ -138,15 +145,24 @@ onUnmounted(() => {
         <div v-if="loadingProjects" class="text-sm text-gray-500">Загрузка проектов...</div>
         <div v-else-if="projects.length === 0" class="text-sm text-gray-500">Нет проектов</div>
         
-        <button
+        <div
           v-for="project in projects"
           :key="project.id"
-          @click="selectProject(project)"
-          class="w-full text-left px-4 py-2 rounded-md transition-colors"
+          class="flex items-center w-full rounded-md transition-colors cursor-pointer group"
           :class="activeProject?.id === project.id ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'"
+          @click="selectProject(project)"
         >
-          {{ project.title }}
-        </button>
+          <div class="flex-1 text-left px-4 py-2 truncate">
+            {{ project.title }}
+          </div>
+          <button
+            @click.stop="handleDelete(project.id)"
+            class="p-2 text-gray-400 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+            title="Удалить проект"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+          </button>
+        </div>
       </div>
 
       <div class="p-4 border-t border-gray-200 space-y-3">
@@ -214,7 +230,7 @@ onUnmounted(() => {
               :disabled="analyzingStatus[activeProject.id]"
               class="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-50"
             >
-              {{ analyzingStatus[activeProject.id] ? 'Анализ идет...' : 'Запустить анализ' }}
+              {{ analyzingStatus[activeProject.id] ? 'Анализ идет...' : (activeProject.report_data ? 'Сделать повторный анализ' : 'Запустить анализ') }}
             </button>
             <button 
               @click="handleDelete(activeProject.id)"
@@ -241,6 +257,10 @@ onUnmounted(() => {
           <h3 class="text-xl font-semibold mb-4">Результаты анализа</h3>
           <div v-if="activeProject.report_data?.summary_text" class="bg-white p-6 rounded-lg border border-gray-200">
             <div class="prose prose-blue max-w-none text-gray-800" v-html="marked.parse(activeProject.report_data.summary_text)"></div>
+          </div>
+          <div v-else-if="activeProject.report_data?.error" class="bg-red-50 p-6 rounded-lg border border-red-200">
+            <h4 class="text-red-800 font-semibold mb-2">Ошибка при анализе:</h4>
+            <p class="text-red-700 whitespace-pre-wrap">{{ activeProject.report_data.error }}</p>
           </div>
           <div v-else-if="analyzingStatus[activeProject.id]" class="text-blue-600 font-medium flex items-center">
             <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

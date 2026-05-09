@@ -14,7 +14,3 @@ class RouterOutput(BaseModel):
     is_valid_gdd: bool
     error_message: Optional[str]
     chunks: GDDChunks
-
-
-class LeadDesignerOutput(BaseModel):
-    summary_text: str

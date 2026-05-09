@@ -1,6 +1,5 @@
 from pydantic_ai import Agent
 from pydantic_ai import ModelSettings
-from app.schemas.agents import LeadDesignerOutput
 import asyncio
 import json
 
@@ -44,4 +43,4 @@ async def analyze_gdd(text: str, logger) -> dict:
     logger.info(f"Compiled reports generated successfully: \n{compiled_reports}")
 
     lead_result = await lead_agent.run(compiled_reports, model_settings=ModelSettings(max_tokens=100000))
-    return {"summary_text": lead_result.output.summary_text}
+    return {"summary_text": lead_result.output}
