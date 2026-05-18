@@ -262,6 +262,45 @@ onUnmounted(() => {
             <h4 class="text-red-800 font-semibold mb-2">Ошибка при анализе:</h4>
             <p class="text-red-700 whitespace-pre-wrap">{{ activeProject.report_data.error }}</p>
           </div>
+          
+          <!-- New Progress Tracking Block -->
+          <div v-else-if="activeProject.thought_process && !activeProject.report_data?.summary_text && !activeProject.report_data?.error" class="mb-6 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+            <h4 class="text-lg font-semibold mb-4 text-gray-800">Процесс анализа:</h4>
+            <ul class="space-y-3">
+              <li v-for="(data, agentName) in activeProject.thought_process" :key="agentName" class="flex items-center text-gray-700">
+                
+                <span class="mr-3 flex-shrink-0">
+                  <!-- Running Status (Spinner) -->
+                  <svg v-if="data.status === 'running'" class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  
+                  <!-- Completed Status (Green Check) -->
+                  <svg v-else-if="data.status === 'completed'" class="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+
+                  <!-- Error Status (Red Cross) -->
+                  <svg v-else-if="data.status === 'error'" class="h-5 w-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </span>
+                
+                <span class="font-medium min-w-[120px] capitalize">{{ agentName }}:</span>
+                <span class="text-sm ml-2" :class="{
+                  'text-blue-600': data.status === 'running',
+                  'text-green-600': data.status === 'completed',
+                  'text-red-600': data.status === 'error'
+                }">
+                  {{ data.status === 'running' ? 'в работе...' : 
+                     data.status === 'completed' ? 'завершено' : 
+                     data.status === 'error' ? 'ошибка' : data.status }}
+                </span>
+              </li>
+            </ul>
+          </div>
+
           <div v-else-if="analyzingStatus[activeProject.id]" class="text-blue-600 font-medium flex items-center">
             <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

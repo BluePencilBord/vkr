@@ -2,6 +2,7 @@ from faststream import FastStream, Logger
 from faststream.rabbit import RabbitBroker
 import uuid
 from sqlalchemy import select
+from sqlalchemy.orm.attributes import flag_modified
 import asyncio
 
 from app.config import settings
@@ -31,11 +32,24 @@ async def handle_gdd_analysis(
         if not project or not project.gdd_file_key:
             return
         
+        db_lock = asyncio.Lock()
+
+        async def update_progress(agent_name: str, status: str):
+            async with db_lock:
+                await session.refresh(project)
+
+                if project.thought_process is None:
+                     project.thought_process = {}
+
+                project.thought_process[agent_name] = {"status": status}
+                flag_modified(project, "thought_process")
+                await session.commit()
+        
         try:
             file_bytes = await download_file_from_s3(project.gdd_file_key)
             text = await extract_text_from_pdf(file_bytes)
 
-            analyze_gdd_result = await analyze_gdd(text, logger)
+            analyze_gdd_result = await analyze_gdd(text, logger, update_progress)
             logger.info(str(analyze_gdd_result))
             project.report_data = analyze_gdd_result
             await session.commit()

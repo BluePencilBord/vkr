@@ -34,6 +34,7 @@ async def calculate_formula(ctx: RunContext[None], expression: str) -> str:
     except Exception as e:
         return f"Ошибка вычисления: {str(e)}. Проверь синтаксис формулы, используй только числа и базовые операторы."
 
+
 async def fetch_steam_market_data(ctx: RunContext[None], genre: str, tags: List[str]) -> Dict[str, Any]:
     """
     Используй этот инструмент для получения информации о рынке в Steam по жанру.
