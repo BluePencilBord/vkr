@@ -56,4 +56,4 @@ async def analyze_gdd(text: str, logger, update_progress = None) -> dict:
     logger.info(f"Compiled reports generated successfully: \n{compiled_reports}")
 
     lead_result = await lead_agent.run(compiled_reports, model_settings=ModelSettings(max_tokens=100000))
-    return {"summary_text": lead_result.output}
+    return lead_result.output
