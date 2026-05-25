@@ -255,16 +255,12 @@ onUnmounted(() => {
 
         <div class="border-t border-gray-200 pt-6">
           <h3 class="text-xl font-semibold mb-4">Результаты анализа</h3>
-          <div v-if="activeProject.report_data?.summary_text" class="bg-white p-6 rounded-lg border border-gray-200">
-            <div class="prose prose-blue max-w-none text-gray-800" v-html="marked.parse(activeProject.report_data.summary_text)"></div>
-          </div>
-          <div v-else-if="activeProject.report_data?.error" class="bg-red-50 p-6 rounded-lg border border-red-200">
-            <h4 class="text-red-800 font-semibold mb-2">Ошибка при анализе:</h4>
-            <p class="text-red-700 whitespace-pre-wrap">{{ activeProject.report_data.error }}</p>
+          <div v-if="activeProject.report_data" class="bg-white p-6 rounded-lg border border-gray-200">
+            <div class="prose prose-blue max-w-none text-gray-800" v-html="marked.parse(activeProject.report_data)"></div>
           </div>
           
           <!-- New Progress Tracking Block -->
-          <div v-else-if="activeProject.thought_process && !activeProject.report_data?.summary_text && !activeProject.report_data?.error" class="mb-6 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div v-else-if="activeProject.thought_process && !activeProject.report_data" class="mb-6 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
             <h4 class="text-lg font-semibold mb-4 text-gray-800">Процесс анализа:</h4>
             <ul class="space-y-3">
               <li v-for="(data, agentName) in activeProject.thought_process" :key="agentName" class="flex items-center text-gray-700">

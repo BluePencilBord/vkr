@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     version: str = "0.1.0"
     
     database_url: str
+    redis_url: str = "redis://localhost:6379/0"
 
     s3_access_key: str
     s3_secret_key: str

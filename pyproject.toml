@@ -21,6 +21,7 @@ dependencies = [
     "pyjwt>=2.12.1",
     "pymupdf>=1.27.2.2",
     "python-multipart>=0.0.24",
+    "redis>=7.4.0",
     "sqlalchemy>=2.0.48",
     "uvicorn>=0.43.0",
 ]

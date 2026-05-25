@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict
-from typing import Optional
+from typing import Optional, Dict, Any
 import uuid
 from datetime import datetime
 
@@ -9,7 +9,8 @@ class ProjectResponse(BaseModel):
     title: str
     gdd_file_key: Optional[str]
     gdd_url: Optional[str] = None
-    report_data: Optional[dict] = None
+    thought_process: Optional[Dict[str, Any]] = None
+    report_data: Optional[str] = None
     created_at: datetime
 
     model_config = ConfigDict(from_attributes = True)

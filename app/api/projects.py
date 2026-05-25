@@ -9,6 +9,7 @@ from app.schemas.projects import ProjectResponse
 from app.services.s3 import upload_file_to_s3, get_presigned_url, delete_file_from_s3
 from app.api.dependencies import get_current_user
 from app.worker import broker
+from app.db.redis import redis_client
 
 
 router = APIRouter()
@@ -104,6 +105,17 @@ async def get_project(
     proj_data = ProjectResponse.model_validate(project)
     if project.gdd_file_key:
         proj_data.gdd_url = await get_presigned_url(project.gdd_file_key)
+
+    redis_key = f"project:{project_id}:progress"
+    redis_progress = await redis_client.hgetall(redis_key)
+
+    if redis_progress:
+        formatted_progress = {}
+
+        for agent, agent_status in redis_progress.items():
+            formatted_progress[agent] = {"status": agent_status}
+
+        proj_data.thought_process = formatted_progress
 
     return proj_data
 

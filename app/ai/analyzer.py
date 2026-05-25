@@ -20,14 +20,8 @@ async def run_specialist(agent: Agent, chunk: str, role_name: str, update_progre
 
 
 async def analyze_gdd(text: str, logger, update_progress = None) -> dict:
-    if update_progress:
-        await update_progress("Router", "running")
-
     router_result = await router_agent.run(text)
     routing_data = router_result.output
-
-    if update_progress:
-        await update_progress("Router", "completed")
 
     if not routing_data.is_valid_gdd:
         err_msg = routing_data.error_message or "gdd rejected. no comments from router agent."
@@ -55,5 +49,12 @@ async def analyze_gdd(text: str, logger, update_progress = None) -> dict:
     compiled_reports = "\n\n".join([f"--- ОТЧЕТ {role.upper()} ---\n{report}" for role, report in specialist_results])
     logger.info(f"Compiled reports generated successfully: \n{compiled_reports}")
 
+    if update_progress:
+        await update_progress("Lead Game Designer", "running")
+
     lead_result = await lead_agent.run(compiled_reports, model_settings=ModelSettings(max_tokens=100000))
+
+    if update_progress:
+        await update_progress("Lead Game Designer", "completed")
+
     return lead_result.output
