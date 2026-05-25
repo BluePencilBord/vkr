@@ -9,7 +9,7 @@ from app.config import settings
 from app.db.database import async_session_maker
 from app.db.models import Project
 from app.services.s3 import download_file_from_s3
-from app.services.pdf_parser import extract_text_from_pdf
+from app.services.document_parser import extract_text_from_document
 from app.ai.analyzer import analyze_gdd
 from app.db.redis import redis_client
 
@@ -40,7 +40,7 @@ async def handle_gdd_analysis(
     
     try:
         file_bytes = await download_file_from_s3(gdd_file_key)
-        text = await extract_text_from_pdf(file_bytes)
+        text = await extract_text_from_document(file_bytes, gdd_file_key)
 
         analyze_gdd_result = await analyze_gdd(text, logger, update_progress)
         
