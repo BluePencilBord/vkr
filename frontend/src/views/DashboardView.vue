@@ -226,11 +226,12 @@ onUnmounted(() => {
           <h2 class="text-3xl font-bold text-gray-800">{{ activeProject.title }}</h2>
           <div class="flex gap-2">
             <button 
+              v-if="!activeProject.report_data"
               @click="handleAnalyze(activeProject.id)"
               :disabled="analyzingStatus[activeProject.id]"
               class="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-50"
             >
-              {{ analyzingStatus[activeProject.id] ? 'Анализ идет...' : (activeProject.report_data ? 'Сделать повторный анализ' : 'Запустить анализ') }}
+              {{ analyzingStatus[activeProject.id] ? 'Анализ идет...' : 'Запустить анализ' }}
             </button>
             <button 
               @click="handleDelete(activeProject.id)"
